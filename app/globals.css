@@ -294,6 +294,18 @@ textarea {
   padding: 12px 14px;
 }
 
+.static-field {
+  display: flex;
+  align-items: center;
+  min-height: 45px;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: #f4f5f7;
+  color: var(--text);
+  font-weight: 700;
+}
+
 .copyable-url {
   display: grid;
   gap: 4px;
@@ -462,6 +474,23 @@ textarea {
   gap: 8px;
   color: var(--muted);
   font-size: 0.95rem;
+}
+
+.check-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  width: fit-content;
+  color: var(--muted);
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+
+.check-label input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--accent);
+  cursor: pointer;
 }
 
 .form {

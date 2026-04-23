@@ -22,6 +22,9 @@ const LABELS: Record<string, string> = {
   company: "회사",
   role: "직무",
   period: "기간",
+  startDate: "시작 월",
+  endDate: "종료 월",
+  current: "재직 상태",
   summary: "담당 업무",
   achievements: "주요 성과",
   technologies: "사용 기술",
@@ -44,6 +47,10 @@ function isRecord(value: unknown): value is ResumeRecord {
 }
 
 function formatValue(value: unknown): string {
+  if (typeof value === "boolean") {
+    return value ? "재직중" : "";
+  }
+
   if (Array.isArray(value)) {
     return value.map(formatValue).filter(Boolean).join(", ");
   }
@@ -64,6 +71,42 @@ function labelFor(key: string) {
 
 function valueFrom(item: unknown, key: string) {
   return isRecord(item) ? formatValue(item[key]) : "";
+}
+
+function isCurrentExperience(item: unknown) {
+  return isRecord(item) && (item.current === true || item.current === "true");
+}
+
+function periodFromExperience(item: unknown) {
+  const period = valueFrom(item, "period");
+  const startDate = valueFrom(item, "startDate");
+  const endDate = valueFrom(item, "endDate");
+
+  if (!isCurrentExperience(item)) {
+    if (startDate && endDate) {
+      return `${startDate} ~ ${endDate}`;
+    }
+
+    return period || startDate || "-";
+  }
+
+  if (startDate) {
+    return `${startDate} ~ 재직중`;
+  }
+
+  if (!period || period === "재직중") {
+    return "재직중";
+  }
+
+  if (period.includes("재직중")) {
+    return period;
+  }
+
+  if (period.includes("~")) {
+    return `${period.replace(/\s*~\s*.*$/, "")} ~ 재직중`;
+  }
+
+  return `${period} ~ 재직중`;
 }
 
 function compactText(value: string) {
@@ -161,7 +204,7 @@ function ExperienceTable({ items }: { items: unknown[] }) {
         ) : (
           items.map((item, index) => (
             <tr key={`experience-${index}`}>
-              <td>{valueFrom(item, "period") || "-"}</td>
+              <td>{periodFromExperience(item)}</td>
               <td>{valueFrom(item, "company") || "-"}</td>
               <td>{valueFrom(item, "role") || "-"}</td>
               <td>{valueFrom(item, "summary") || formatValue(item) || "-"}</td>

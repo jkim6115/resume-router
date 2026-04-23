@@ -8,6 +8,9 @@ type ExperienceItem = {
   company: string;
   role: string;
   period: string;
+  startDate: string;
+  endDate: string;
+  current: boolean;
   summary: string;
   achievements: string;
   technologies: string;
@@ -66,13 +69,53 @@ function toStringValue(value: unknown) {
   return typeof value === "string" ? value : "";
 }
 
+function toBooleanValue(value: unknown) {
+  return value === true || value === "true";
+}
+
+function parsePeriodRange(period: string) {
+  const normalized = period.trim();
+  const [start = "", end = ""] = normalized.split("~").map((value) => value.trim());
+
+  return {
+    startDate: /^\d{4}-\d{2}$/.test(start) ? start : "",
+    endDate: /^\d{4}-\d{2}$/.test(end) ? end : "",
+  };
+}
+
+function formatExperiencePeriod(item: Pick<ExperienceItem, "period" | "startDate" | "endDate" | "current">) {
+  if (item.startDate && item.current) {
+    return `${item.startDate} ~ 재직중`;
+  }
+
+  if (item.startDate && item.endDate) {
+    return `${item.startDate} ~ ${item.endDate}`;
+  }
+
+  if (item.startDate) {
+    return item.startDate;
+  }
+
+  if (item.current) {
+    return "재직중";
+  }
+
+  return item.period.trim();
+}
+
 function toExperienceItem(value: unknown): ExperienceItem {
   const item = value && typeof value === "object" && !Array.isArray(value) ? value as Record<string, unknown> : {};
+  const period = toStringValue(item.period);
+  const parsedPeriod = parsePeriodRange(period);
+  const current = toBooleanValue(item.current) || period.includes("재직중");
 
   return {
     company: toStringValue(item.company),
     role: toStringValue(item.role),
-    period: toStringValue(item.period),
+    period,
+    startDate: toStringValue(item.startDate) || parsedPeriod.startDate,
+    endDate: current ? "" : toStringValue(item.endDate) || parsedPeriod.endDate,
+    current,
     summary: toStringValue(item.summary),
     achievements: toStringValue(item.achievements),
     technologies: toStringValue(item.technologies),
@@ -121,15 +164,41 @@ function toProjectItem(value: unknown): ProjectItem {
   };
 }
 
-function compactRecords<T extends Record<string, string>>(items: T[]) {
-  return items.filter((item) => Object.values(item).some((value) => value.trim()));
+function hasMeaningfulValue(value: string | boolean) {
+  return typeof value === "boolean" ? value : value.trim();
+}
+
+function compactRecords<T extends Record<string, string | boolean>>(items: T[]) {
+  return items.filter((item) => Object.values(item).some(hasMeaningfulValue));
+}
+
+function compactExperienceRecords(items: ExperienceItem[]) {
+  return compactRecords(
+    items.map((item) => ({
+      ...item,
+      endDate: item.current ? "" : item.endDate,
+      period: formatExperiencePeriod(item),
+    }))
+  );
 }
 
 export function ProfileForm({ action, initialValues }: ProfileFormProps) {
   const [experience, setExperience] = useState<ExperienceItem[]>(
     initialValues.experience.length > 0
       ? initialValues.experience.map(toExperienceItem)
-      : [{ company: "", role: "", period: "", summary: "", achievements: "", technologies: "" }]
+      : [
+          {
+            company: "",
+            role: "",
+            period: "",
+            startDate: "",
+            endDate: "",
+            current: false,
+            summary: "",
+            achievements: "",
+            technologies: "",
+          },
+        ]
   );
   const [education, setEducation] = useState<EducationItem[]>(
     initialValues.education.length > 0
@@ -218,7 +287,7 @@ export function ProfileForm({ action, initialValues }: ProfileFormProps) {
         />
       </label>
 
-      <input type="hidden" name="experienceJson" value={JSON.stringify(compactRecords(experience), null, 2)} />
+      <input type="hidden" name="experienceJson" value={JSON.stringify(compactExperienceRecords(experience), null, 2)} />
       <input type="hidden" name="skillsJson" value={JSON.stringify(compactRecords(skills), null, 2)} />
       <input type="hidden" name="projectsJson" value={JSON.stringify(compactRecords(projects), null, 2)} />
       <input type="hidden" name="educationJson" value={JSON.stringify(compactRecords(education), null, 2)} />
@@ -232,7 +301,17 @@ export function ProfileForm({ action, initialValues }: ProfileFormProps) {
         onAdd={() =>
           setExperience((items) => [
             ...items,
-            { company: "", role: "", period: "", summary: "", achievements: "", technologies: "" },
+            {
+              company: "",
+              role: "",
+              period: "",
+              startDate: "",
+              endDate: "",
+              current: false,
+              summary: "",
+              achievements: "",
+              technologies: "",
+            },
           ])
         }
       >
@@ -272,18 +351,53 @@ export function ProfileForm({ action, initialValues }: ProfileFormProps) {
                 }
               />
             </div>
-            <Field
-              label="기간"
-              value={item.period}
-              placeholder="예: 2023-01 ~ 2025-03"
-              onChange={(value) =>
-                setExperience((items) =>
-                  items.map((current, itemIndex) =>
-                    itemIndex === index ? { ...current, period: value } : current
+            <div className="grid two">
+              <MonthField
+                label="시작 월"
+                value={item.startDate}
+                onChange={(value) =>
+                  setExperience((items) =>
+                    items.map((current, itemIndex) =>
+                      itemIndex === index ? { ...current, startDate: value } : current
+                    )
                   )
-                )
-              }
-            />
+                }
+              />
+              {item.current ? (
+                <label className="label">
+                  종료 월
+                  <span className="static-field">재직중</span>
+                </label>
+              ) : (
+                <MonthField
+                  label="종료 월"
+                  value={item.endDate}
+                  onChange={(value) =>
+                    setExperience((items) =>
+                      items.map((current, itemIndex) =>
+                        itemIndex === index ? { ...current, endDate: value } : current
+                      )
+                    )
+                  }
+                />
+              )}
+            </div>
+            <label className="check-label">
+              <input
+                type="checkbox"
+                checked={item.current}
+                onChange={(event) =>
+                  setExperience((items) =>
+                    items.map((current, itemIndex) =>
+                      itemIndex === index
+                        ? { ...current, current: event.target.checked, endDate: event.target.checked ? "" : current.endDate }
+                        : current
+                    )
+                  )
+                }
+              />
+              현재 재직중
+            </label>
             <TextAreaField
               label="담당 업무"
               value={item.summary}
@@ -696,6 +810,23 @@ function Field({
         value={value}
         onChange={(event) => onChange(event.target.value)}
       />
+    </label>
+  );
+}
+
+function MonthField({
+  label,
+  value,
+  onChange,
+}: {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+}) {
+  return (
+    <label className="label">
+      {label}
+      <input className="input" type="month" value={value} onChange={(event) => onChange(event.target.value)} />
     </label>
   );
 }

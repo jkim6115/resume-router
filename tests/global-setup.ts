@@ -34,7 +34,10 @@ async function globalSetup() {
         {
           company: "Example Corp",
           role: "Frontend Engineer",
-          period: "2023-01 ~ 2025-03",
+          period: "2023-01",
+          startDate: "2023-01",
+          endDate: "",
+          current: true,
           summary: "사내 대시보드와 지원자 관리 UI를 개발했습니다.",
           achievements: "반복 입력을 줄이고 주요 조회 흐름을 단축했습니다.",
           technologies: "Next.js, TypeScript, Prisma",

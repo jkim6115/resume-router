@@ -22,6 +22,9 @@ async function main() {
             company: "Example Corp",
             role: "Frontend Engineer",
             period: "2023-01 ~ 2025-03",
+            startDate: "2023-01",
+            endDate: "2025-03",
+            current: false,
             summary: "사내 대시보드와 지원자 관리 UI를 개발했습니다.",
             achievements: "지원자 정보 탐색 시간을 줄이고 반복 입력을 줄이는 화면 흐름을 개선했습니다.",
             technologies: "React, TypeScript, Next.js"

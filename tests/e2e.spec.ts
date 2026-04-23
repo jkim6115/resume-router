@@ -14,6 +14,7 @@ test("base resume renders the document layout", async ({ page }) => {
   await page.goto("/resume");
   await expect(page.getByRole("heading", { name: "김요한" })).toBeVisible();
   await expect(page.getByText("Frontend Engineer").first()).toBeVisible();
+  await expect(page.getByText("2023-01 ~ 재직중")).toBeVisible();
   await expect(page.getByRole("heading", { name: /소개/ })).toBeVisible();
   await expect(page.getByRole("heading", { name: /프로젝트/ })).toBeVisible();
 });
@@ -53,6 +54,10 @@ test.describe("admin", () => {
     const saveButton = page.getByRole("button", { name: "공통 이력서 저장" });
 
     await expect(page.getByLabel("대표 직무명")).toBeVisible();
+    await expect(page.getByLabel("시작 월").first()).toHaveValue("2023-01");
+    await expect(page.getByLabel("현재 재직중")).toBeVisible();
+    await expect(page.getByText("종료 월")).toBeVisible();
+    await expect(page.getByText("재직중", { exact: true }).first()).toBeVisible();
     await expect(page.getByRole("heading", { name: "프로젝트" })).toBeVisible();
     await expect(saveButton).toBeVisible();
     await expect(saveButton).toHaveCSS("width", "48px");
