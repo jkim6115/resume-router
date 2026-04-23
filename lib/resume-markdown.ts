@@ -109,7 +109,7 @@ function buildCommonMarkdown({
     `## ${motivationTitle}`,
     motivation || "등록된 내용이 없습니다.",
     formatSection("경력사항", experience),
-    formatSection("스킬셋", skills),
+    formatSection("기술스택", skills),
     formatSection("프로젝트", projects),
     formatSection("학력", education),
     formatSection("교육", training),
@@ -124,7 +124,7 @@ export function buildBaseResumeMarkdown(baseResume: BaseResume) {
       baseResume,
       selfIntroduction: baseResume.selfIntroduction,
       motivation: baseResume.motivation,
-      motivationTitle: "지원 방향",
+      motivationTitle: "지원동기",
     }),
   ].join("\n\n");
 }

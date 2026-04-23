@@ -35,18 +35,15 @@ async function main() {
       ),
       skillsJson: JSON.stringify(
         [
-          {
-            category: "Programming Languages",
-            items: "JavaScript, TypeScript, Python"
-          },
-          {
-            category: "Framework / Library",
-            items: "React, Next.js, Spring Boot"
-          },
-          {
-            category: "Tooling / DevOps",
-            items: "Git, Docker, SQLite"
-          }
+          { items: "JavaScript" },
+          { items: "TypeScript" },
+          { items: "Python" },
+          { items: "React" },
+          { items: "Next.js" },
+          { items: "Spring Boot" },
+          { items: "Git" },
+          { items: "Docker" },
+          { items: "SQLite" }
         ],
         null,
         2
@@ -70,7 +67,9 @@ async function main() {
           {
             school: "Example University",
             major: "Computer Science",
-            period: "2018-03 ~ 2022-02"
+            period: "2018-03 ~ 2022-02",
+            startDate: "2018-03",
+            endDate: "2022-02"
           }
         ],
         null,
@@ -80,7 +79,8 @@ async function main() {
         [
           {
             name: "Advanced Web Development Bootcamp",
-            period: "2022-03 ~ 2022-08"
+            period: "2022-03 ~ 2022-08",
+            summary: "프론트엔드와 백엔드 웹 애플리케이션 개발 과정을 수료했습니다."
           }
         ],
         null,

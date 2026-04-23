@@ -20,6 +20,8 @@ type EducationItem = {
   school: string;
   major: string;
   period: string;
+  startDate: string;
+  endDate: string;
 };
 
 type TrainingItem = {
@@ -103,6 +105,14 @@ function formatExperiencePeriod(item: Pick<ExperienceItem, "period" | "startDate
   return item.period.trim();
 }
 
+function formatPeriod(item: { period: string; startDate: string; endDate: string }) {
+  if (item.startDate && item.endDate) {
+    return `${item.startDate} ~ ${item.endDate}`;
+  }
+
+  return item.startDate || item.endDate || item.period.trim();
+}
+
 function toExperienceItem(value: unknown): ExperienceItem {
   const item = value && typeof value === "object" && !Array.isArray(value) ? value as Record<string, unknown> : {};
   const period = toStringValue(item.period);
@@ -124,11 +134,15 @@ function toExperienceItem(value: unknown): ExperienceItem {
 
 function toEducationItem(value: unknown): EducationItem {
   const item = value && typeof value === "object" && !Array.isArray(value) ? value as Record<string, unknown> : {};
+  const period = toStringValue(item.period);
+  const parsedPeriod = parsePeriodRange(period);
 
   return {
     school: toStringValue(item.school),
     major: toStringValue(item.major),
-    period: toStringValue(item.period),
+    period,
+    startDate: toStringValue(item.startDate) || parsedPeriod.startDate,
+    endDate: toStringValue(item.endDate) || parsedPeriod.endDate,
   };
 }
 
@@ -149,6 +163,14 @@ function toSkillItem(value: unknown): SkillItem {
     category: toStringValue(item.category),
     items: toStringValue(item.items),
   };
+}
+
+function skillsToText(items: unknown[]) {
+  return items
+    .map(toSkillItem)
+    .map((item) => item.items || item.category)
+    .filter(Boolean)
+    .join("\n");
 }
 
 function toProjectItem(value: unknown): ProjectItem {
@@ -182,6 +204,23 @@ function compactExperienceRecords(items: ExperienceItem[]) {
   );
 }
 
+function compactEducationRecords(items: EducationItem[]) {
+  return compactRecords(
+    items.map((item) => ({
+      ...item,
+      period: formatPeriod(item),
+    }))
+  );
+}
+
+function buildSkillRecords(value: string) {
+  return value
+    .split(/\n|,/)
+    .map((item) => item.trim())
+    .filter(Boolean)
+    .map((items) => ({ items }));
+}
+
 export function ProfileForm({ action, initialValues }: ProfileFormProps) {
   const [experience, setExperience] = useState<ExperienceItem[]>(
     initialValues.experience.length > 0
@@ -203,18 +242,14 @@ export function ProfileForm({ action, initialValues }: ProfileFormProps) {
   const [education, setEducation] = useState<EducationItem[]>(
     initialValues.education.length > 0
       ? initialValues.education.map(toEducationItem)
-      : [{ school: "", major: "", period: "" }]
+      : [{ school: "", major: "", period: "", startDate: "", endDate: "" }]
   );
   const [training, setTraining] = useState<TrainingItem[]>(
     initialValues.training.length > 0
       ? initialValues.training.map(toTrainingItem)
       : [{ name: "", period: "", summary: "" }]
   );
-  const [skills, setSkills] = useState<SkillItem[]>(
-    initialValues.skills.length > 0
-      ? initialValues.skills.map(toSkillItem)
-      : [{ category: "", items: "" }]
-  );
+  const [skillsText, setSkillsText] = useState(skillsToText(initialValues.skills));
   const [projects, setProjects] = useState<ProjectItem[]>(
     initialValues.projects.length > 0
       ? initialValues.projects.map(toProjectItem)
@@ -278,7 +313,7 @@ export function ProfileForm({ action, initialValues }: ProfileFormProps) {
       </label>
 
       <label className="label">
-        기본 지원 방향
+        기본 지원동기
         <textarea
           className="textarea compact-textarea"
           name="motivation"
@@ -288,9 +323,9 @@ export function ProfileForm({ action, initialValues }: ProfileFormProps) {
       </label>
 
       <input type="hidden" name="experienceJson" value={JSON.stringify(compactExperienceRecords(experience), null, 2)} />
-      <input type="hidden" name="skillsJson" value={JSON.stringify(compactRecords(skills), null, 2)} />
+      <input type="hidden" name="skillsJson" value={JSON.stringify(buildSkillRecords(skillsText), null, 2)} />
       <input type="hidden" name="projectsJson" value={JSON.stringify(compactRecords(projects), null, 2)} />
-      <input type="hidden" name="educationJson" value={JSON.stringify(compactRecords(education), null, 2)} />
+      <input type="hidden" name="educationJson" value={JSON.stringify(compactEducationRecords(education), null, 2)} />
       <input type="hidden" name="trainingJson" value={JSON.stringify(compactRecords(training), null, 2)} />
       <input type="hidden" name="linksJson" value={linksJson} />
 
@@ -437,51 +472,10 @@ export function ProfileForm({ action, initialValues }: ProfileFormProps) {
       </EditableSection>
 
       <EditableSection
-        title="스킬셋"
-        description="언어, 프레임워크, 도구 등 개발 역량을 분류해 입력하세요."
-        addLabel="스킬 추가"
-        onAdd={() => setSkills((items) => [...items, { category: "", items: "" }])}
+        title="기술스택"
+        description="언어, 프레임워크, 도구 등 개발 역량을 한 줄 또는 쉼표로 구분해 입력하세요."
       >
-        {skills.map((item, index) => (
-          <div className="form-card" key={`skill-${index}`}>
-            <div className="toolbar">
-              <strong>스킬 {index + 1}</strong>
-              <button
-                className="button"
-                type="button"
-                onClick={() => setSkills((items) => items.filter((_, itemIndex) => itemIndex !== index))}
-              >
-                삭제
-              </button>
-            </div>
-            <div className="grid two">
-              <Field
-                label="분류"
-                value={item.category}
-                placeholder="예: Programming Languages"
-                onChange={(value) =>
-                  setSkills((items) =>
-                    items.map((current, itemIndex) =>
-                      itemIndex === index ? { ...current, category: value } : current
-                    )
-                  )
-                }
-              />
-              <Field
-                label="기술"
-                value={item.items}
-                placeholder="예: TypeScript, React, Docker"
-                onChange={(value) =>
-                  setSkills((items) =>
-                    items.map((current, itemIndex) =>
-                      itemIndex === index ? { ...current, items: value } : current
-                    )
-                  )
-                }
-              />
-            </div>
-          </div>
-        ))}
+        <TextAreaField label="기술스택" value={skillsText} onChange={setSkillsText} />
       </EditableSection>
 
       <EditableSection
@@ -587,9 +581,9 @@ export function ProfileForm({ action, initialValues }: ProfileFormProps) {
 
       <EditableSection
         title="학력"
-        description="학교명, 전공, 재학 기간을 입력하세요."
+        description="학교명, 전공, 입학 월과 졸업 월을 입력하세요."
         addLabel="학력 추가"
-        onAdd={() => setEducation((items) => [...items, { school: "", major: "", period: "" }])}
+        onAdd={() => setEducation((items) => [...items, { school: "", major: "", period: "", startDate: "", endDate: "" }])}
       >
         {education.map((item, index) => (
           <div className="form-card" key={`education-${index}`}>
@@ -627,18 +621,30 @@ export function ProfileForm({ action, initialValues }: ProfileFormProps) {
                 }
               />
             </div>
-            <Field
-              label="기간"
-              value={item.period}
-              placeholder="예: 2018-03 ~ 2022-02"
-              onChange={(value) =>
-                setEducation((items) =>
-                  items.map((current, itemIndex) =>
-                    itemIndex === index ? { ...current, period: value } : current
+            <div className="grid two">
+              <MonthField
+                label="입학 월"
+                value={item.startDate}
+                onChange={(value) =>
+                  setEducation((items) =>
+                    items.map((current, itemIndex) =>
+                      itemIndex === index ? { ...current, startDate: value } : current
+                    )
                   )
-                )
-              }
-            />
+                }
+              />
+              <MonthField
+                label="졸업 월"
+                value={item.endDate}
+                onChange={(value) =>
+                  setEducation((items) =>
+                    items.map((current, itemIndex) =>
+                      itemIndex === index ? { ...current, endDate: value } : current
+                    )
+                  )
+                }
+              />
+            </div>
           </div>
         ))}
       </EditableSection>
@@ -701,7 +707,7 @@ export function ProfileForm({ action, initialValues }: ProfileFormProps) {
 
       <EditableSection
         title="링크"
-        description="GitHub, 포트폴리오 등 공개 링크를 입력하세요."
+        description="GitHub, 블로그, 포트폴리오, SNS 등 이력서 헤더에 표시할 링크를 입력하세요."
         addLabel="링크 추가"
         onAdd={() => setLinks((items) => [...items, { label: "", url: "" }])}
       >
@@ -721,7 +727,7 @@ export function ProfileForm({ action, initialValues }: ProfileFormProps) {
               <Field
                 label="이름"
                 value={item.label}
-                placeholder="예: github"
+                placeholder="예: github, blog, portfolio, linkedin"
                 onChange={(value) =>
                   setLinks((items) =>
                     items.map((current, itemIndex) =>
@@ -770,8 +776,8 @@ function EditableSection({
 }: {
   title: string;
   description: string;
-  addLabel: string;
-  onAdd: () => void;
+  addLabel?: string;
+  onAdd?: () => void;
   children: ReactNode;
 }) {
   return (
@@ -781,9 +787,11 @@ function EditableSection({
           <h2 className="section-title">{title}</h2>
           <p className="muted">{description}</p>
         </div>
-        <button className="button" type="button" onClick={onAdd}>
-          {addLabel}
-        </button>
+        {addLabel && onAdd ? (
+          <button className="button" type="button" onClick={onAdd}>
+            {addLabel}
+          </button>
+        ) : null}
       </div>
       <div className="stack">{children}</div>
     </section>

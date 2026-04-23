@@ -9,7 +9,12 @@ export const metadata: Metadata = {
   description: "기본 이력서의 공통 내용과 일반 지원용 문구를 수정합니다.",
 };
 
-export default async function AdminProfilePage() {
+type AdminProfilePageProps = {
+  searchParams: Promise<{ saved?: string }>;
+};
+
+export default async function AdminProfilePage({ searchParams }: AdminProfilePageProps) {
+  const { saved } = await searchParams;
   const baseResume = await getBaseResume();
   const initialValues = {
     name: baseResume.name,
@@ -33,6 +38,8 @@ export default async function AdminProfilePage() {
           title="공통 이력서 관리"
           description="기본 이력서와 기업별 이력서에 함께 쓰이는 내용을 관리합니다."
         />
+
+        {saved ? <div className="notice success">저장되었습니다.</div> : null}
 
         <section className="card panel">
           <ProfileForm action={saveBaseResume} initialValues={initialValues} />

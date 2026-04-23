@@ -19,7 +19,7 @@ export async function getBaseResume() {
       phone: "010-0000-0000",
       position: "Developer",
       selfIntroduction: "일반 지원용 자기소개를 입력하세요.",
-      motivation: "직무와 성장 방향에 맞춘 기본 지원 방향을 입력하세요.",
+      motivation: "직무와 성장 방향에 맞춘 기본 지원동기를 입력하세요.",
       experienceJson: "[]",
       skillsJson: "[]",
       projectsJson: "[]",
@@ -75,9 +75,11 @@ export function buildBaseResumeUrl() {
 }
 
 export function buildResumeMarkdownUrl(id: string) {
-  return `${buildResumeUrl(id)}/markdown`;
+  const baseUrl = process.env.BASE_URL || "http://localhost:3000";
+  return `${baseUrl.replace(/\/$/, "")}/admin/resumes/${id}/markdown`;
 }
 
 export function buildBaseResumeMarkdownUrl() {
-  return `${buildBaseResumeUrl()}/markdown`;
+  const baseUrl = process.env.BASE_URL || "http://localhost:3000";
+  return `${baseUrl.replace(/\/$/, "")}/admin/resume/markdown`;
 }

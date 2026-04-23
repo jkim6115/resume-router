@@ -44,10 +44,9 @@ async function globalSetup() {
         },
       ]),
       skillsJson: JSON.stringify([
-        {
-          category: "Frontend",
-          items: "React, Next.js, TypeScript",
-        },
+        { items: "React" },
+        { items: "Next.js" },
+        { items: "TypeScript" },
       ]),
       projectsJson: JSON.stringify([
         {
@@ -64,6 +63,8 @@ async function globalSetup() {
           school: "Example University",
           major: "Computer Science",
           period: "2018-03 ~ 2022-02",
+          startDate: "2018-03",
+          endDate: "2022-02",
         },
       ]),
       trainingJson: JSON.stringify([

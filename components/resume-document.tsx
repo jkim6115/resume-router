@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { ExternalLink, Globe, Link2 } from "lucide-react";
 
 type ResumeDocumentProps = {
   name: string;
@@ -125,33 +126,82 @@ function inferRole(position: string, experience: unknown[]) {
   return firstRole || "Developer";
 }
 
+function iconForLink(label: string) {
+  const normalized = label.toLowerCase();
+
+  if (normalized.includes("github") || normalized === "git") {
+    return (
+      <img
+        className="brand-icon"
+        src="https://github.githubassets.com/favicons/favicon.svg"
+        alt=""
+        aria-hidden="true"
+      />
+    );
+  }
+
+  if (normalized.includes("linkedin")) {
+    return <Link2 className="icon" aria-hidden="true" />;
+  }
+
+  if (
+    normalized.includes("blog") ||
+    normalized.includes("portfolio") ||
+    normalized.includes("website") ||
+    normalized.includes("site")
+  ) {
+    return <Globe className="icon" aria-hidden="true" />;
+  }
+
+  return <ExternalLink className="icon" aria-hidden="true" />;
+}
+
+function labelForLink(label: string) {
+  const normalized = label.trim();
+
+  if (!normalized) {
+    return "링크";
+  }
+
+  return normalized;
+}
+
 function ProfileTable({ email, phone, links }: { email: string; phone: string; links: Record<string, string> }) {
-  const primaryLink = Object.entries(links)[0];
   const rows = [
     ["Email", email],
     ["Mobile", phone],
-    primaryLink ? [primaryLink[0], primaryLink[1]] : null,
   ].filter(Boolean) as string[][];
+  const linkEntries = Object.entries(links).filter(([, url]) => url.trim());
 
   return (
-    <table className="resume-info-table">
-      <tbody>
-        {rows.map(([label, value]) => (
-          <tr key={label}>
-            <th>{label}</th>
-            <td>
-              {value.startsWith("http") ? (
-                <a href={value} target="_blank" rel="noreferrer">
-                  {value}
-                </a>
-              ) : (
-                value
-              )}
-            </td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
+    <div className="resume-contact">
+      <table className="resume-info-table">
+        <tbody>
+          {rows.map(([label, value]) => (
+            <tr key={label}>
+              <th>{label}</th>
+              <td>{value}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      {linkEntries.length > 0 ? (
+        <div className="resume-link-icons" aria-label="외부 링크">
+          {linkEntries.map(([label, url]) => (
+            <a
+              key={`${label}-${url}`}
+              href={url}
+              target="_blank"
+              rel="noreferrer"
+              aria-label={labelForLink(label)}
+              title={labelForLink(label)}
+            >
+              {iconForLink(label)}
+            </a>
+          ))}
+        </div>
+      ) : null}
+    </div>
   );
 }
 
@@ -185,67 +235,76 @@ function EmptyRow({ colSpan, text }: { colSpan: number; text: string }) {
   );
 }
 
+function EmptyBlock({ text }: { text: string }) {
+  return <div className="resume-empty-block">{text}</div>;
+}
+
+function DetailMeta({ label, value }: { label: string; value: string }) {
+  return (
+    <span>
+      <strong>{label}</strong>
+      {value || "-"}
+    </span>
+  );
+}
+
+function DetailField({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="resume-detail-field">
+      <strong>{label}</strong>
+      <p>{value || "-"}</p>
+    </div>
+  );
+}
+
 function ExperienceTable({ items }: { items: unknown[] }) {
   return (
-    <table className="resume-data-table">
-      <thead>
-        <tr>
-          <th>재직 기간</th>
-          <th>회사명</th>
-          <th>직무</th>
-          <th>담당 업무</th>
-          <th>주요 성과</th>
-          <th>사용 기술</th>
-        </tr>
-      </thead>
-      <tbody>
-        {items.length === 0 ? (
-          <EmptyRow colSpan={6} text="등록된 경력사항이 없습니다." />
-        ) : (
-          items.map((item, index) => (
-            <tr key={`experience-${index}`}>
-              <td>{periodFromExperience(item)}</td>
-              <td>{valueFrom(item, "company") || "-"}</td>
-              <td>{valueFrom(item, "role") || "-"}</td>
-              <td>{valueFrom(item, "summary") || formatValue(item) || "-"}</td>
-              <td>{valueFrom(item, "achievements") || "-"}</td>
-              <td>{valueFrom(item, "technologies") || "-"}</td>
-            </tr>
-          ))
-        )}
-      </tbody>
-    </table>
+    <div className="resume-detail-list">
+      {items.length === 0 ? (
+        <EmptyBlock text="등록된 경력사항이 없습니다." />
+      ) : (
+        items.map((item, index) => (
+          <article className="resume-detail-card" key={`experience-${index}`}>
+            <div className="resume-detail-head">
+              <h3>{valueFrom(item, "company") || "회사명 미입력"}</h3>
+              <div className="resume-detail-meta">
+                <DetailMeta label="기간" value={periodFromExperience(item)} />
+                <DetailMeta label="직무" value={valueFrom(item, "role")} />
+              </div>
+            </div>
+            <DetailField label="담당 업무" value={valueFrom(item, "summary") || formatValue(item)} />
+            <DetailField label="주요 성과" value={valueFrom(item, "achievements")} />
+            <DetailField label="사용 기술" value={valueFrom(item, "technologies")} />
+          </article>
+        ))
+      )}
+    </div>
   );
 }
 
 function ProjectTable({ items }: { items: unknown[] }) {
   return (
-    <table className="resume-data-table compact">
-      <thead>
-        <tr>
-          <th>프로젝트</th>
-          <th>기간</th>
-          <th>역할</th>
-          <th>설명</th>
-          <th>기술스택</th>
-          <th>링크</th>
-        </tr>
-      </thead>
-      <tbody>
-        {items.length === 0 ? (
-          <EmptyRow colSpan={6} text="등록된 프로젝트가 없습니다." />
-        ) : (
-          items.map((item, index) => {
-            const link = valueFrom(item, "link");
+    <div className="resume-detail-list">
+      {items.length === 0 ? (
+        <EmptyBlock text="등록된 프로젝트가 없습니다." />
+      ) : (
+        items.map((item, index) => {
+          const link = valueFrom(item, "link");
 
-            return (
-              <tr key={`project-${index}`}>
-                <td>{valueFrom(item, "name") || "-"}</td>
-                <td>{valueFrom(item, "period") || "-"}</td>
-                <td>{valueFrom(item, "role") || "-"}</td>
-                <td>{valueFrom(item, "summary") || formatValue(item) || "-"}</td>
-                <td>{valueFrom(item, "technologies") || "-"}</td>
-                <td>
+          return (
+            <article className="resume-detail-card" key={`project-${index}`}>
+              <div className="resume-detail-head">
+                <h3>{valueFrom(item, "name") || "프로젝트명 미입력"}</h3>
+                <div className="resume-detail-meta">
+                  <DetailMeta label="기간" value={valueFrom(item, "period")} />
+                  <DetailMeta label="역할" value={valueFrom(item, "role")} />
+                </div>
+              </div>
+              <DetailField label="설명" value={valueFrom(item, "summary") || formatValue(item)} />
+              <DetailField label="기술스택" value={valueFrom(item, "technologies")} />
+              <div className="resume-detail-field">
+                <strong>링크</strong>
+                <p>
                   {link ? (
                     <a href={link} target="_blank" rel="noreferrer">
                       {link}
@@ -253,38 +312,54 @@ function ProjectTable({ items }: { items: unknown[] }) {
                   ) : (
                     "-"
                   )}
-                </td>
-              </tr>
-            );
-          })
-        )}
-      </tbody>
-    </table>
+                </p>
+              </div>
+            </article>
+          );
+        })
+      )}
+    </div>
   );
 }
 
 function SkillTable({ items }: { items: unknown[] }) {
+  const skills = items
+    .flatMap((item) => {
+      const value = valueFrom(item, "items") || valueFrom(item, "category") || formatValue(item);
+      return value.split(/\n|,/).map((skill) => skill.trim());
+    })
+    .filter(Boolean);
+
   return (
-    <table className="resume-data-table compact">
-      <thead>
-        <tr>
-          <th>구분</th>
-          <th>Skill</th>
-        </tr>
-      </thead>
-      <tbody>
-        {items.length === 0 ? (
-          <EmptyRow colSpan={2} text="등록된 스킬셋이 없습니다." />
-        ) : (
-          items.map((item, index) => (
-            <tr key={`skill-${index}`}>
-              <td>{valueFrom(item, "category") || "-"}</td>
-              <td>{valueFrom(item, "items") || formatValue(item) || "-"}</td>
-            </tr>
-          ))
-        )}
-      </tbody>
-    </table>
+    <div className="skill-list">
+      {skills.length === 0 ? (
+        <EmptyBlock text="등록된 기술스택이 없습니다." />
+      ) : (
+        skills.map((skill) => <span key={skill}>{skill}</span>)
+      )}
+    </div>
+  );
+}
+
+function TrainingList({ items }: { items: unknown[] }) {
+  return (
+    <div className="resume-detail-list">
+      {items.length === 0 ? (
+        <EmptyBlock text="등록된 교육 정보가 없습니다." />
+      ) : (
+        items.map((item, index) => (
+          <article className="resume-detail-card" key={`training-${index}`}>
+            <div className="resume-detail-head">
+              <h3>{valueFrom(item, "name") || "교육명 미입력"}</h3>
+              <div className="resume-detail-meta">
+                <DetailMeta label="기간" value={valueFrom(item, "period")} />
+              </div>
+            </div>
+            <DetailField label="내용" value={valueFrom(item, "summary") || formatValue(item)} />
+          </article>
+        ))
+      )}
+    </div>
   );
 }
 
@@ -315,37 +390,6 @@ function SimpleTable({
               {columns.map(([label, key]) => (
                 <td key={label}>{valueFrom(item, key) || formatValue(item) || "-"}</td>
               ))}
-            </tr>
-          ))
-        )}
-      </tbody>
-    </table>
-  );
-}
-
-function LinksTable({ links }: { links: Record<string, string> }) {
-  const entries = Object.entries(links);
-
-  return (
-    <table className="resume-data-table compact">
-      <thead>
-        <tr>
-          <th>이름</th>
-          <th>URL</th>
-        </tr>
-      </thead>
-      <tbody>
-        {entries.length === 0 ? (
-          <EmptyRow colSpan={2} text="등록된 링크가 없습니다." />
-        ) : (
-          entries.map(([label, url]) => (
-            <tr key={label}>
-              <td>{label}</td>
-              <td>
-                <a href={url} target="_blank" rel="noreferrer">
-                  {url}
-                </a>
-              </td>
             </tr>
           ))
         )}
@@ -414,9 +458,11 @@ export function ResumeDocument({
         <SkillTable items={skills} />
       </Section>
 
-      <Section title="프로젝트" englishTitle="Projects">
-        <ProjectTable items={projects} />
-      </Section>
+      {projects.length > 0 ? (
+        <Section title="프로젝트" englishTitle="Projects">
+          <ProjectTable items={projects} />
+        </Section>
+      ) : null}
 
       <Section title="학력" englishTitle="Education">
         <SimpleTable
@@ -431,20 +477,9 @@ export function ResumeDocument({
       </Section>
 
       <Section title="교육" englishTitle="Training">
-        <SimpleTable
-          items={training}
-          emptyText="등록된 교육 정보가 없습니다."
-          columns={[
-            ["교육명", "name"],
-            ["기간", "period"],
-            ["내용", "summary"],
-          ]}
-        />
+        <TrainingList items={training} />
       </Section>
 
-      <Section title="외부 링크" englishTitle="Links">
-        <LinksTable links={links} />
-      </Section>
     </article>
   );
 }

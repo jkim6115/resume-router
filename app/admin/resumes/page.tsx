@@ -20,7 +20,7 @@ export const metadata: Metadata = {
 };
 
 type AdminResumesPageProps = {
-  searchParams: Promise<{ q?: string }>;
+  searchParams: Promise<{ q?: string; saved?: string }>;
 };
 
 function IconLink({
@@ -50,7 +50,7 @@ function IconLink({
 }
 
 export default async function AdminResumesPage({ searchParams }: AdminResumesPageProps) {
-  const { q } = await searchParams;
+  const { q, saved } = await searchParams;
   const query = String(q || "").trim();
   const items = await prisma.targetResume.findMany({
     where: query
@@ -72,6 +72,12 @@ export default async function AdminResumesPage({ searchParams }: AdminResumesPag
           title="기업별 이력서 관리"
           description="회사용 자기소개와 지원동기를 관리하고, 공개 URL을 즉시 복사할 수 있습니다."
         />
+
+        {saved ? (
+          <div className="notice success">
+            {saved === "created" ? "기업별 이력서가 생성되었습니다." : "저장되었습니다."}
+          </div>
+        ) : null}
 
         <section className="card panel stack">
           <div className="toolbar">

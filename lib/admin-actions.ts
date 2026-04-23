@@ -56,7 +56,7 @@ export async function saveBaseResume(formData: FormData) {
     await prisma.baseResume.create({ data: payload });
   }
 
-  redirect("/admin/profile");
+  redirect("/admin/profile?saved=1");
 }
 
 export async function createTargetResume(formData: FormData) {
@@ -71,7 +71,7 @@ export async function createTargetResume(formData: FormData) {
     },
   });
 
-  redirect("/admin/resumes");
+  redirect("/admin/resumes?saved=created");
 }
 
 export async function updateTargetResume(id: string, formData: FormData) {
@@ -91,7 +91,7 @@ export async function updateTargetResume(id: string, formData: FormData) {
     },
   });
 
-  redirect("/admin/resumes");
+  redirect("/admin/resumes?saved=updated");
 }
 
 export async function deleteTargetResume(id: string) {
