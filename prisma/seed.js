@@ -22,6 +22,9 @@ async function main() {
             company: "Example Corp",
             role: "Frontend Engineer",
             period: "2023-01 ~ 2025-03",
+            startDate: "2023-01",
+            endDate: "2025-03",
+            current: false,
             summary: "사내 대시보드와 지원자 관리 UI를 개발했습니다.",
             achievements: "지원자 정보 탐색 시간을 줄이고 반복 입력을 줄이는 화면 흐름을 개선했습니다.",
             technologies: "React, TypeScript, Next.js"
@@ -32,18 +35,15 @@ async function main() {
       ),
       skillsJson: JSON.stringify(
         [
-          {
-            category: "Programming Languages",
-            items: "JavaScript, TypeScript, Python"
-          },
-          {
-            category: "Framework / Library",
-            items: "React, Next.js, Spring Boot"
-          },
-          {
-            category: "Tooling / DevOps",
-            items: "Git, Docker, SQLite"
-          }
+          { items: "JavaScript" },
+          { items: "TypeScript" },
+          { items: "Python" },
+          { items: "React" },
+          { items: "Next.js" },
+          { items: "Spring Boot" },
+          { items: "Git" },
+          { items: "Docker" },
+          { items: "SQLite" }
         ],
         null,
         2
@@ -67,7 +67,9 @@ async function main() {
           {
             school: "Example University",
             major: "Computer Science",
-            period: "2018-03 ~ 2022-02"
+            period: "2018-03 ~ 2022-02",
+            startDate: "2018-03",
+            endDate: "2022-02"
           }
         ],
         null,
@@ -77,7 +79,8 @@ async function main() {
         [
           {
             name: "Advanced Web Development Bootcamp",
-            period: "2022-03 ~ 2022-08"
+            period: "2022-03 ~ 2022-08",
+            summary: "프론트엔드와 백엔드 웹 애플리케이션 개발 과정을 수료했습니다."
           }
         ],
         null,

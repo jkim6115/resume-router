@@ -7,6 +7,9 @@ const LABELS: Record<string, string> = {
   company: "회사",
   role: "직무",
   period: "기간",
+  startDate: "시작 월",
+  endDate: "종료 월",
+  current: "재직 상태",
   summary: "요약",
   achievements: "주요 성과",
   technologies: "사용 기술",
@@ -33,6 +36,10 @@ function labelFor(key: string) {
 }
 
 function formatValue(value: unknown): string {
+  if (typeof value === "boolean") {
+    return value ? "재직중" : "";
+  }
+
   if (Array.isArray(value)) {
     return value.map(formatValue).filter(Boolean).join(", ");
   }
@@ -58,7 +65,9 @@ function formatSection(title: string, items: unknown[]) {
         return `- ${formatValue(item)}`;
       }
 
-      const entries = Object.entries(item).filter(([, value]) => formatValue(value));
+      const entries = Object.entries(item).filter(
+        ([key, value]) => key !== "startDate" && key !== "endDate" && formatValue(value)
+      );
       return entries.map(([key, value]) => `- ${labelFor(key)}: ${formatValue(value)}`).join("\n");
     })
     .join("\n\n");
@@ -100,7 +109,7 @@ function buildCommonMarkdown({
     `## ${motivationTitle}`,
     motivation || "등록된 내용이 없습니다.",
     formatSection("경력사항", experience),
-    formatSection("스킬셋", skills),
+    formatSection("기술스택", skills),
     formatSection("프로젝트", projects),
     formatSection("학력", education),
     formatSection("교육", training),
@@ -115,7 +124,7 @@ export function buildBaseResumeMarkdown(baseResume: BaseResume) {
       baseResume,
       selfIntroduction: baseResume.selfIntroduction,
       motivation: baseResume.motivation,
-      motivationTitle: "지원 방향",
+      motivationTitle: "지원동기",
     }),
   ].join("\n\n");
 }

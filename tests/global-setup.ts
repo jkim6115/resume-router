@@ -34,17 +34,19 @@ async function globalSetup() {
         {
           company: "Example Corp",
           role: "Frontend Engineer",
-          period: "2023-01 ~ 2025-03",
+          period: "2023-01",
+          startDate: "2023-01",
+          endDate: "",
+          current: true,
           summary: "사내 대시보드와 지원자 관리 UI를 개발했습니다.",
           achievements: "반복 입력을 줄이고 주요 조회 흐름을 단축했습니다.",
           technologies: "Next.js, TypeScript, Prisma",
         },
       ]),
       skillsJson: JSON.stringify([
-        {
-          category: "Frontend",
-          items: "React, Next.js, TypeScript",
-        },
+        { items: "React" },
+        { items: "Next.js" },
+        { items: "TypeScript" },
       ]),
       projectsJson: JSON.stringify([
         {
@@ -61,6 +63,8 @@ async function globalSetup() {
           school: "Example University",
           major: "Computer Science",
           period: "2018-03 ~ 2022-02",
+          startDate: "2018-03",
+          endDate: "2022-02",
         },
       ]),
       trainingJson: JSON.stringify([

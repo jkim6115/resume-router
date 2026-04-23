@@ -32,7 +32,7 @@ Each company-specific resume is assembled from:
 - Admin pages are protected by Basic Auth
 - Admin list must make public URLs easy to copy
 - Public resume pages must not show the target company name
-- Markdown export is required for AI feedback workflows
+- Markdown export is required for AI feedback workflows and must stay admin-only
 
 ## Routes
 
@@ -40,9 +40,7 @@ Public:
 
 - `/`
 - `/resume`
-- `/resume/markdown`
 - `/resumes/[id]`
-- `/resumes/[id]/markdown`
 
 Admin:
 
@@ -50,6 +48,8 @@ Admin:
 - `/admin/resumes/new`
 - `/admin/resumes/[id]/edit`
 - `/admin/profile`
+- `/admin/resume/markdown`
+- `/admin/resumes/[id]/markdown`
 
 ## Resume Structure
 
@@ -61,7 +61,7 @@ Base resume:
 - self introduction for the general resume
 - general motivation / direction
 - experience
-- skill set
+- skill set / technology stack
 - projects
 - education
 - training

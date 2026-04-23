@@ -30,7 +30,7 @@ export default async function BaseResumePage() {
           position={baseResume.position}
           selfIntroduction={baseResume.selfIntroduction}
           motivation={baseResume.motivation}
-          motivationTitle="지원 방향"
+          motivationTitle="지원동기"
           experience={experience}
           skills={skills}
           projects={projects}

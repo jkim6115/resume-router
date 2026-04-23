@@ -11,7 +11,9 @@ function unauthorizedResponse() {
 }
 
 export function middleware(request: NextRequest) {
-  if (!request.nextUrl.pathname.startsWith("/admin")) {
+  const pathname = request.nextUrl.pathname;
+
+  if (!pathname.startsWith("/admin")) {
     return NextResponse.next();
   }
 
