@@ -10,3 +10,4 @@ prisma/test.db-journal
 test-results
 playwright-report
 data
+.DS_Store
