@@ -1,0 +1,9 @@
+.git
+.next
+node_modules
+npm-debug.log
+Dockerfile*
+docker-compose.yml
+README.md
+prisma/dev.db
+prisma/dev.db-journal
