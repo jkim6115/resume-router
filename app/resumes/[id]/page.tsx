@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { ResumeDocument } from "@/components/resume-document";
+import { ResumePrintButton } from "@/components/resume-print-button";
 import { getBaseResume, getTargetResumeOrThrow, parseJsonArray, parseJsonObject } from "@/lib/resume";
 
 type PageProps = {
@@ -36,6 +37,9 @@ export default async function ResumePage({ params }: PageProps) {
   return (
     <main className="page">
       <div className="shell">
+        <div className="resume-actions">
+          <ResumePrintButton />
+        </div>
         <ResumeDocument
           name={baseResume.name}
           email={baseResume.email}

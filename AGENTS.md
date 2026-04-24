@@ -25,7 +25,7 @@ Each company-specific resume is assembled from:
 - Use `Next.js App Router` for routing and server-side logic
 - Use server components for read flows where practical
 - Use server actions for admin mutations
-- Deployment target: on-premise Docker
+- Deployment target: AWS EC2 + Docker
 - Database: `SQLite`
 - ORM: `Prisma`
 - Admin page is required
@@ -154,7 +154,7 @@ Do not change global button, form, table, floating save button, or resume docume
 - Keep public rendering read-only and fast.
 - Keep admin workflows efficient for a single primary user.
 - Optimize the admin list page for quickly finding, copying, previewing, exporting, editing, and deleting resumes.
-- Keep Docker setup small and easy to run on-premise.
+- Keep Docker setup small and easy to run on AWS EC2.
 - Avoid showing company names on public resume pages unless explicitly requested.
 
 ## Future Notes

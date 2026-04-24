@@ -110,10 +110,33 @@ function periodFromExperience(item: unknown) {
   return `${period} ~ 재직중`;
 }
 
+function periodFromRecord(item: unknown) {
+  const period = valueFrom(item, "period");
+  const startDate = valueFrom(item, "startDate");
+  const endDate = valueFrom(item, "endDate");
+
+  if (period) {
+    return period;
+  }
+
+  if (startDate && endDate) {
+    return `${startDate} ~ ${endDate}`;
+  }
+
+  return startDate || endDate || "-";
+}
+
 function compactText(value: string) {
   return value
     .split(/\n+/)
     .map((line) => line.trim())
+    .filter(Boolean);
+}
+
+function splitSkillText(value: string) {
+  return value
+    .split(/[\n,，、]+/)
+    .map((skill) => skill.trim())
     .filter(Boolean);
 }
 
@@ -225,16 +248,6 @@ function Section({
   );
 }
 
-function EmptyRow({ colSpan, text }: { colSpan: number; text: string }) {
-  return (
-    <tr>
-      <td className="resume-empty-row" colSpan={colSpan}>
-        {text}
-      </td>
-    </tr>
-  );
-}
-
 function EmptyBlock({ text }: { text: string }) {
   return <div className="resume-empty-block">{text}</div>;
 }
@@ -326,7 +339,7 @@ function SkillTable({ items }: { items: unknown[] }) {
   const skills = items
     .flatMap((item) => {
       const value = valueFrom(item, "items") || valueFrom(item, "category") || formatValue(item);
-      return value.split(/\n|,/).map((skill) => skill.trim());
+      return splitSkillText(value);
     })
     .filter(Boolean);
 
@@ -335,7 +348,7 @@ function SkillTable({ items }: { items: unknown[] }) {
       {skills.length === 0 ? (
         <EmptyBlock text="등록된 기술스택이 없습니다." />
       ) : (
-        skills.map((skill) => <span key={skill}>{skill}</span>)
+        skills.map((skill, index) => <span key={`${skill}-${index}`}>{skill}</span>)
       )}
     </div>
   );
@@ -363,38 +376,25 @@ function TrainingList({ items }: { items: unknown[] }) {
   );
 }
 
-function SimpleTable({
-  items,
-  emptyText,
-  columns,
-}: {
-  items: unknown[];
-  emptyText: string;
-  columns: Array<[string, string]>;
-}) {
+function EducationList({ items }: { items: unknown[] }) {
   return (
-    <table className="resume-data-table compact">
-      <thead>
-        <tr>
-          {columns.map(([label]) => (
-            <th key={label}>{label}</th>
-          ))}
-        </tr>
-      </thead>
-      <tbody>
-        {items.length === 0 ? (
-          <EmptyRow colSpan={columns.length} text={emptyText} />
-        ) : (
-          items.map((item, index) => (
-            <tr key={`row-${index}`}>
-              {columns.map(([label, key]) => (
-                <td key={label}>{valueFrom(item, key) || formatValue(item) || "-"}</td>
-              ))}
-            </tr>
-          ))
-        )}
-      </tbody>
-    </table>
+    <div className="resume-detail-list">
+      {items.length === 0 ? (
+        <EmptyBlock text="등록된 학력 정보가 없습니다." />
+      ) : (
+        items.map((item, index) => (
+          <article className="resume-detail-card education-card" key={`education-${index}`}>
+            <div className="resume-detail-head">
+              <h3>{valueFrom(item, "school") || valueFrom(item, "name") || "학교명 미입력"}</h3>
+              <div className="resume-detail-meta">
+                <DetailMeta label="기간" value={periodFromRecord(item)} />
+                <DetailMeta label="전공" value={valueFrom(item, "major")} />
+              </div>
+            </div>
+          </article>
+        ))
+      )}
+    </div>
   );
 }
 
@@ -465,15 +465,7 @@ export function ResumeDocument({
       ) : null}
 
       <Section title="학력" englishTitle="Education">
-        <SimpleTable
-          items={education}
-          emptyText="등록된 학력 정보가 없습니다."
-          columns={[
-            ["학교명", "school"],
-            ["전공", "major"],
-            ["기간", "period"],
-          ]}
-        />
+        <EducationList items={education} />
       </Section>
 
       <Section title="교육" englishTitle="Training">

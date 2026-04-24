@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import { ResumeDocument } from "@/components/resume-document";
+import { ResumePrintButton } from "@/components/resume-print-button";
 import { getBaseResume, parseJsonArray, parseJsonObject } from "@/lib/resume";
+
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata(): Promise<Metadata> {
   const baseResume = await getBaseResume();
@@ -23,6 +26,9 @@ export default async function BaseResumePage() {
   return (
     <main className="page">
       <div className="shell">
+        <div className="resume-actions">
+          <ResumePrintButton />
+        </div>
         <ResumeDocument
           name={baseResume.name}
           email={baseResume.email}

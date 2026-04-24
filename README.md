@@ -17,7 +17,7 @@ Resume Router는 지원 회사별로 맞춤 이력서를 만들고, 안정적인
 - 공개 이력서 본문에는 지원 회사명 비노출
 - Prisma와 SQLite 기반 데이터 저장
 - 관리자 페이지 Basic Auth 보호
-- 온프레미스 실행을 위한 Docker 구성
+- AWS EC2 배포를 위한 Docker 구성
 
 ## 기술 스택
 
@@ -205,7 +205,56 @@ docker compose up --build
 
 기본 포트는 `3000`입니다.
 
-`docker-compose.yml`은 호스트의 `./prisma` 디렉터리를 컨테이너의 `/app/prisma`에 마운트합니다. SQLite 파일이 컨테이너 재생성 후에도 유지되도록 하기 위한 구성입니다.
+`docker-compose.yml`은 호스트의 `./data` 디렉터리를 컨테이너의 `/app/data`에 마운트합니다. SQLite 파일이 컨테이너 재생성 후에도 유지되도록 하기 위한 구성입니다. 운영 환경에서는 `RESUME_ROUTER_DATA_DIR`로 EBS 볼륨 위의 데이터 디렉터리를 지정할 수 있습니다.
+
+## AWS EC2 배포
+
+배포 기준은 EC2 인스턴스에서 Docker Compose로 실행하는 방식입니다. SQLite를 사용하므로 데이터베이스 파일은 컨테이너 내부가 아니라 EBS 볼륨에 보존해야 합니다.
+
+EC2에 Docker와 Docker Compose 플러그인을 설치한 뒤 저장소를 내려받습니다.
+
+```bash
+git clone <repository-url>
+cd resume-router
+```
+
+EC2 운영용 `.env` 예시:
+
+```env
+BASE_URL="https://resume.example.com"
+ADMIN_USERNAME="admin"
+ADMIN_PASSWORD="change-this-to-a-long-random-password"
+RESUME_ROUTER_DATA_DIR="/srv/resume-router/data"
+```
+
+Docker Compose 실행 시 컨테이너 내부의 `DATABASE_URL`은 `file:/app/data/dev.db`로 고정됩니다. 호스트에서 실제 SQLite 파일을 보관할 위치는 `RESUME_ROUTER_DATA_DIR`로 지정합니다.
+
+SQLite 데이터 디렉터리를 만들고 컨테이너가 쓸 수 있게 준비합니다.
+
+```bash
+sudo mkdir -p /srv/resume-router/data
+sudo chown -R "$USER":"$USER" /srv/resume-router
+```
+
+컨테이너를 빌드하고 실행합니다.
+
+```bash
+docker compose up -d --build
+```
+
+처음 배포하거나 Prisma 스키마가 바뀐 뒤에는 컨테이너 안에서 DB 스키마를 반영합니다.
+
+```bash
+docker compose exec web npm run db:push
+```
+
+샘플 데이터를 넣어 확인하려면 다음 명령을 실행합니다. 실제 운영 데이터가 있는 경우에는 실행하지 않습니다.
+
+```bash
+docker compose exec web npm run db:seed
+```
+
+운영 시에는 EC2 보안 그룹에서 필요한 포트만 열고, 가능하면 ALB나 Nginx 같은 리버스 프록시에서 HTTPS를 종료한 뒤 `BASE_URL`을 실제 공개 도메인으로 설정합니다. SQLite 파일이 있는 EBS 볼륨은 정기적으로 스냅샷을 남기는 것을 권장합니다.
 
 ## 디자인 메모
 
