@@ -354,11 +354,31 @@ textarea {
   height: 22px;
 }
 
-.compact-url span {
+.compact-url .url-text {
   overflow: hidden;
   color: var(--muted);
   font-size: 0.86rem;
   text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.compact-url .copy-status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+  min-width: 58px;
+  color: var(--muted);
+}
+
+.compact-url .copy-status.copied,
+.compact-url .copy-status.copied small {
+  color: #18794e;
+}
+
+.compact-url .copy-status small {
+  font-size: 0.78rem;
+  font-weight: 700;
   white-space: nowrap;
 }
 
@@ -551,6 +571,44 @@ textarea {
   flex-wrap: wrap;
 }
 
+.resume-actions {
+  display: flex;
+  justify-content: flex-end;
+  width: min(920px, 100%);
+  margin: 0 auto 12px;
+}
+
+.resume-print-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 0 12px;
+  border: 1px solid #b9c1c7;
+  border-radius: 6px;
+  background: #fff;
+  color: #222;
+  box-shadow: 0 10px 30px rgba(46, 38, 24, 0.06);
+  font-size: 0.88rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition:
+    border-color 160ms ease,
+    background 160ms ease;
+}
+
+.resume-print-button:hover,
+.resume-print-button:focus {
+  border-color: #8d96a3;
+  background: #f8f9fa;
+  outline: none;
+}
+
+.resume-print-button .icon {
+  width: 18px;
+  height: 18px;
+}
+
 .resume-paper {
   display: grid;
   gap: 28px;
@@ -702,11 +760,6 @@ textarea {
   line-height: 1.72;
 }
 
-.resume-bullets li::before {
-  content: "-";
-  margin-right: 10px;
-}
-
 .resume-data-table {
   border-top: 1px solid #8f989f;
   border-bottom: 1px solid #8f989f;
@@ -761,6 +814,11 @@ textarea {
   gap: 6px;
   padding-bottom: 8px;
   border-bottom: 1px solid #d5d9de;
+}
+
+.education-card .resume-detail-head {
+  padding-bottom: 0;
+  border-bottom: 0;
 }
 
 .resume-detail-head h3 {
@@ -932,6 +990,10 @@ textarea {
     padding: 36px 20px 48px;
   }
 
+  .resume-actions {
+    margin-bottom: 10px;
+  }
+
   .resume-sheet-header {
     grid-template-columns: 1fr;
     gap: 24px;
@@ -971,6 +1033,10 @@ textarea {
 
   .shell {
     width: 100%;
+  }
+
+  .resume-actions {
+    display: none;
   }
 
   .resume-paper {

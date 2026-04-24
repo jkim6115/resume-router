@@ -47,6 +47,7 @@ async function globalSetup() {
         { items: "React" },
         { items: "Next.js" },
         { items: "TypeScript" },
+        { items: "JavaScript, Java" },
       ]),
       projectsJson: JSON.stringify([
         {

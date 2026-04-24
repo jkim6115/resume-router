@@ -20,6 +20,23 @@ test("base resume renders the document layout", async ({ page }) => {
   await expect(page.getByRole("heading", { name: /외부 링크/ })).toHaveCount(0);
   await expect(page.getByRole("heading", { name: /소개/ })).toBeVisible();
   await expect(page.getByRole("heading", { name: /프로젝트/ })).toBeVisible();
+  await expect(page.getByText("JavaScript", { exact: true })).toBeVisible();
+  await expect(page.getByText("Java", { exact: true })).toBeVisible();
+});
+
+test("public resume print button opens the browser print flow", async ({ page }) => {
+  await page.addInitScript(() => {
+    window.print = () => {
+      (window as typeof window & { __printCalled?: boolean }).__printCalled = true;
+    };
+  });
+
+  await page.goto("/resume");
+  await page.getByRole("button", { name: "PDF로 인쇄" }).click();
+
+  await expect.poll(() => page.evaluate(() => (window as typeof window & { __printCalled?: boolean }).__printCalled)).toBe(
+    true
+  );
 });
 
 test("target resume renders and hides the company name", async ({ page }) => {
@@ -66,6 +83,26 @@ test.describe("admin", () => {
     await expect(page.getByLabel("마크다운 내보내기").first()).toBeVisible();
     await expect(page.getByLabel("수정").first()).toBeVisible();
     await expect(page.getByLabel("새 항목 추가")).toBeVisible();
+  });
+
+  test("resume URLs show a copied notice after click", async ({ page }) => {
+    await page.addInitScript(() => {
+      Object.defineProperty(navigator, "clipboard", {
+        value: {
+          writeText: async (text: string) => {
+            (window as typeof window & { __copiedText?: string }).__copiedText = text;
+          },
+        },
+      });
+    });
+
+    await page.goto("/admin/resumes");
+    await page.getByRole("button", { name: "URL 복사" }).first().click();
+
+    await expect(page.getByText("복사됨").first()).toBeVisible();
+    await expect
+      .poll(() => page.evaluate(() => (window as typeof window & { __copiedText?: string }).__copiedText))
+      .toContain("/resume");
   });
 
   test("saved notices are visible after redirects", async ({ page }) => {
