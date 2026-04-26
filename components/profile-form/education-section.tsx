@@ -50,28 +50,32 @@ export function EducationSection({ items, onChange }: Props) {
               value={item.startDate}
               onChange={(value) => onChange(update(items, index, { startDate: value }))}
             />
-            <div>
+            {item.currentlyEnrolled ? (
+              <label className="label">
+                졸업 월
+                <span className="static-field">재학중</span>
+              </label>
+            ) : (
               <MonthField
                 label="졸업 월"
                 value={item.endDate}
-                disabled={item.currentlyEnrolled}
                 onChange={(value) => onChange(update(items, index, { endDate: value }))}
               />
-              <label className="label" style={{ flexDirection: "row", alignItems: "center", gap: "0.5rem", marginTop: "0.25rem" }}>
-                <input
-                  type="checkbox"
-                  checked={item.currentlyEnrolled}
-                  onChange={(e) =>
-                    onChange(update(items, index, {
-                      currentlyEnrolled: e.target.checked,
-                      endDate: e.target.checked ? "" : item.endDate,
-                    }))
-                  }
-                />
-                재학중
-              </label>
-            </div>
+            )}
           </div>
+          <label className="check-label">
+            <input
+              type="checkbox"
+              checked={item.currentlyEnrolled}
+              onChange={(e) =>
+                onChange(update(items, index, {
+                  currentlyEnrolled: e.target.checked,
+                  endDate: e.target.checked ? "" : item.endDate,
+                }))
+              }
+            />
+            재학중
+          </label>
         </div>
       ))}
     </EditableSection>
