@@ -58,16 +58,24 @@ export function Field({
 export function MonthField({
   label,
   value,
+  disabled,
   onChange,
 }: {
   label: string;
   value: string;
+  disabled?: boolean;
   onChange: (value: string) => void;
 }) {
   return (
     <label className="label">
       {label}
-      <input className="input" type="month" value={value} onChange={(event) => onChange(event.target.value)} />
+      <input
+        className="input"
+        type="month"
+        value={value}
+        disabled={disabled}
+        onChange={(event) => onChange(event.target.value)}
+      />
     </label>
   );
 }
