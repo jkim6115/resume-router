@@ -11,6 +11,7 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     title: `기본 이력서 | ${baseResume.name}`,
     description: `${baseResume.name}의 기본 이력서입니다.`,
+    icons: { icon: "/icon.svg" },
   };
 }
 

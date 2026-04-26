@@ -17,6 +17,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   return {
     title: `${targetResume.companyName} 이력서 | ${baseResume.name}`,
     description: `${targetResume.companyName} 지원용 ${baseResume.name}의 이력서입니다.`,
+    icons: { icon: "/icon.svg" },
   };
 }
 
