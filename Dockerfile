@@ -20,4 +20,4 @@ COPY --from=builder /app/prisma ./prisma
 COPY package.json package-lock.json* ./
 RUN npm run db:generate
 EXPOSE 3000
-CMD ["node", "server.js"]
+CMD ["sh", "-c", "npm run db:generate && npm run db:push && node server.js"]
