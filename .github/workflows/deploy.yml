@@ -15,5 +15,5 @@ jobs:
 
       - name: Build and deploy
         run: |
-          docker compose --env-file $HOME/resume-router/.env up -d --build
+          docker compose --env-file $HOME/web/resume-router/.env up -d --build
           docker image prune -f
