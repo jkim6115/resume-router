@@ -50,6 +50,8 @@ test("invalid resume IDs return the not found page", async ({ page }) => {
   const response = await page.goto("/resumes/NOPE");
   expect(response?.status()).toBe(404);
   await expect(page.getByRole("heading", { name: "이력서를 찾을 수 없습니다." })).toBeVisible();
+  await expect(page.getByText("주소가 올바른지 확인해 주세요.")).toBeVisible();
+  await expect(page.getByRole("link", { name: "관리자 페이지로 이동" })).toHaveCount(0);
 });
 
 test("markdown exports require admin authentication", async ({ request }) => {

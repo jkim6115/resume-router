@@ -4,6 +4,9 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "Resume Router",
   description: "Company-specific resume delivery app",
+  icons: {
+    icon: "/icon.svg",
+  },
 };
 
 export default function RootLayout({
