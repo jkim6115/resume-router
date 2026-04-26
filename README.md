@@ -207,54 +207,56 @@ docker compose up --build
 
 `docker-compose.yml`은 호스트의 `./data` 디렉터리를 컨테이너의 `/app/data`에 마운트합니다. SQLite 파일이 컨테이너 재생성 후에도 유지되도록 하기 위한 구성입니다. 운영 환경에서는 `RESUME_ROUTER_DATA_DIR`로 EBS 볼륨 위의 데이터 디렉터리를 지정할 수 있습니다.
 
-## AWS EC2 배포
+## 셀프 호스팅 배포
 
-배포 기준은 EC2 인스턴스에서 Docker Compose로 실행하는 방식입니다. SQLite를 사용하므로 데이터베이스 파일은 컨테이너 내부가 아니라 EBS 볼륨에 보존해야 합니다.
+`main` 브랜치에 푸시하면 홈서버에서 실행 중인 GitHub Actions self-hosted runner가 자동으로 Docker 이미지를 빌드하고 컨테이너를 재시작합니다. DB 스키마 마이그레이션(`prisma db push`)은 컨테이너 시작 시 자동으로 실행됩니다.
 
-EC2에 Docker와 Docker Compose 플러그인을 설치한 뒤 저장소를 내려받습니다.
+### GitHub Actions Runner 설치
+
+홈서버에 Docker와 Docker Compose 플러그인을 설치한 뒤, GitHub 저장소의 **Settings → Actions → Runners → New self-hosted runner**에서 안내하는 설치 명령을 실행합니다.
+
+### 데이터 디렉터리 및 환경변수 초기 설정 (1회)
+
+영속 데이터(SQLite DB, `.env`)는 runner 워크스페이스 밖의 고정 경로에 보관합니다.
 
 ```bash
-git clone <repository-url>
-cd resume-router
+sudo mkdir -p /opt/resume-router/data
+sudo chown -R "$USER":"$USER" /opt/resume-router
 ```
 
-EC2 운영용 `.env` 예시:
+`/opt/resume-router/.env`를 생성합니다.
 
 ```env
+DATABASE_URL="file:/app/data/dev.db"
 BASE_URL="https://resume.example.com"
 ADMIN_USERNAME="admin"
 ADMIN_PASSWORD="change-this-to-a-long-random-password"
-RESUME_ROUTER_DATA_DIR="/srv/resume-router/data"
+RESUME_ROUTER_DATA_DIR="/opt/resume-router/data"
 ```
 
-Docker Compose 실행 시 컨테이너 내부의 `DATABASE_URL`은 `file:/app/data/dev.db`로 고정됩니다. 호스트에서 실제 SQLite 파일을 보관할 위치는 `RESUME_ROUTER_DATA_DIR`로 지정합니다.
+`DATABASE_URL`은 컨테이너 내부 경로로 고정합니다. 호스트의 실제 SQLite 파일 위치는 `RESUME_ROUTER_DATA_DIR`로 지정합니다.
 
-SQLite 데이터 디렉터리를 만들고 컨테이너가 쓸 수 있게 준비합니다.
+### 기존 데이터 마이그레이션
+
+이전에 다른 경로에서 운영하던 데이터가 있다면 이동합니다.
 
 ```bash
-sudo mkdir -p /srv/resume-router/data
-sudo chown -R "$USER":"$USER" /srv/resume-router
+mv /기존/경로/data/dev.db /opt/resume-router/data/dev.db
 ```
 
-컨테이너를 빌드하고 실행합니다.
+### 수동 배포 및 운영 명령
+
+runner 없이 수동으로 배포하려면 프로젝트 디렉터리에서 실행합니다.
 
 ```bash
-docker compose up -d --build
-```
-
-처음 배포하거나 Prisma 스키마가 바뀐 뒤에는 컨테이너 안에서 DB 스키마를 반영합니다.
-
-```bash
-docker compose exec web npm run db:push
+docker compose --env-file /opt/resume-router/.env up -d --build
 ```
 
 샘플 데이터를 넣어 확인하려면 다음 명령을 실행합니다. 실제 운영 데이터가 있는 경우에는 실행하지 않습니다.
 
 ```bash
-docker compose exec web npm run db:seed
+docker compose --env-file /opt/resume-router/.env exec web npm run db:seed
 ```
-
-운영 시에는 EC2 보안 그룹에서 필요한 포트만 열고, 가능하면 ALB나 Nginx 같은 리버스 프록시에서 HTTPS를 종료한 뒤 `BASE_URL`을 실제 공개 도메인으로 설정합니다. SQLite 파일이 있는 EBS 볼륨은 정기적으로 스냅샷을 남기는 것을 권장합니다.
 
 ## 디자인 메모
 
