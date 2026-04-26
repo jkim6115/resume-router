@@ -70,12 +70,14 @@ function toEducationItem(value: unknown): EducationItem {
   const item = toRecord(value);
   const period = toStr(item.period);
   const parsed = parsePeriodRange(period);
+  const currentlyEnrolled = !!item.currentlyEnrolled || period.includes("재학중");
   return {
     school: toStr(item.school),
     major: toStr(item.major),
     period,
     startDate: toStr(item.startDate) || parsed.startDate,
-    endDate: toStr(item.endDate) || parsed.endDate,
+    endDate: currentlyEnrolled ? "" : toStr(item.endDate) || parsed.endDate,
+    currentlyEnrolled,
   };
 }
 
@@ -148,8 +150,18 @@ function compactExperienceRecords(items: ExperienceItem[]) {
   );
 }
 
+function formatEducationPeriod(item: EducationItem) {
+  if (item.startDate && item.currentlyEnrolled) return `${item.startDate} ~ 재학중`;
+  if (item.startDate && item.endDate) return `${item.startDate} ~ ${item.endDate}`;
+  if (item.startDate) return item.startDate;
+  if (item.currentlyEnrolled) return "재학중";
+  return item.period.trim();
+}
+
 function compactEducationRecords(items: EducationItem[]) {
-  return compactRecords(items.map((item) => ({ ...item, period: formatPeriod(item) })));
+  return compactRecords(
+    items.map((item) => ({ ...item, endDate: item.currentlyEnrolled ? "" : item.endDate, period: formatEducationPeriod(item) }))
+  );
 }
 
 function compactTrainingRecords(items: TrainingItem[]) {
@@ -177,7 +189,7 @@ export function ProfileForm({ action, initialValues }: ProfileFormProps) {
   const [education, setEducation] = useState<EducationItem[]>(
     initialValues.education.length > 0
       ? initialValues.education.map(toEducationItem)
-      : [{ school: "", major: "", period: "", startDate: "", endDate: "" }]
+      : [{ school: "", major: "", period: "", startDate: "", endDate: "", currentlyEnrolled: false }]
   );
   const [training, setTraining] = useState<TrainingItem[]>(
     initialValues.training.length > 0

@@ -16,6 +16,7 @@ export type EducationItem = {
   period: string;
   startDate: string;
   endDate: string;
+  currentlyEnrolled: boolean;
 };
 
 export type TrainingItem = {

@@ -10,7 +10,7 @@ function update(items: EducationItem[], index: number, patch: Partial<EducationI
   return items.map((item, i) => (i === index ? { ...item, ...patch } : item));
 }
 
-const EMPTY: EducationItem = { school: "", major: "", period: "", startDate: "", endDate: "" };
+const EMPTY: EducationItem = { school: "", major: "", period: "", startDate: "", endDate: "", currentlyEnrolled: false };
 
 export function EducationSection({ items, onChange }: Props) {
   return (
@@ -50,11 +50,27 @@ export function EducationSection({ items, onChange }: Props) {
               value={item.startDate}
               onChange={(value) => onChange(update(items, index, { startDate: value }))}
             />
-            <MonthField
-              label="졸업 월"
-              value={item.endDate}
-              onChange={(value) => onChange(update(items, index, { endDate: value }))}
-            />
+            <div>
+              <MonthField
+                label="졸업 월"
+                value={item.endDate}
+                disabled={item.currentlyEnrolled}
+                onChange={(value) => onChange(update(items, index, { endDate: value }))}
+              />
+              <label className="label" style={{ flexDirection: "row", alignItems: "center", gap: "0.5rem", marginTop: "0.25rem" }}>
+                <input
+                  type="checkbox"
+                  checked={item.currentlyEnrolled}
+                  onChange={(e) =>
+                    onChange(update(items, index, {
+                      currentlyEnrolled: e.target.checked,
+                      endDate: e.target.checked ? "" : item.endDate,
+                    }))
+                  }
+                />
+                재학중
+              </label>
+            </div>
           </div>
         </div>
       ))}
