@@ -45,31 +45,36 @@ export async function saveBaseResume(formData: FormData) {
     linksJson: getString(formData, "linksJson") || "{}",
   };
 
-  const existing = await prisma.baseResume.findFirst();
-
-  if (existing) {
-    await prisma.baseResume.update({
-      where: { id: existing.id },
-      data: payload,
-    });
-  } else {
-    await prisma.baseResume.create({ data: payload });
+  try {
+    const existing = await prisma.baseResume.findFirst();
+    if (existing) {
+      await prisma.baseResume.update({ where: { id: existing.id }, data: payload });
+    } else {
+      await prisma.baseResume.create({ data: payload });
+    }
+  } catch (error) {
+    console.error("[saveBaseResume]", error);
+    throw error;
   }
 
   redirect("/admin/profile?saved=1");
 }
 
 export async function createTargetResume(formData: FormData) {
-  const id = await generateUniqueResumeId();
-
-  await prisma.targetResume.create({
-    data: {
-      id,
-      companyName: getString(formData, "companyName"),
-      selfIntroduction: getString(formData, "selfIntroduction"),
-      motivation: getString(formData, "motivation"),
-    },
-  });
+  try {
+    const id = await generateUniqueResumeId();
+    await prisma.targetResume.create({
+      data: {
+        id,
+        companyName: getString(formData, "companyName"),
+        selfIntroduction: getString(formData, "selfIntroduction"),
+        motivation: getString(formData, "motivation"),
+      },
+    });
+  } catch (error) {
+    console.error("[createTargetResume]", error);
+    throw error;
+  }
 
   redirect("/admin/resumes?saved=created");
 }
@@ -81,15 +86,20 @@ export async function updateTargetResume(id: string, formData: FormData) {
     throw new Error("Invalid ID.");
   }
 
-  await prisma.targetResume.update({
-    where: { id: normalizedId },
-    data: {
-      companyName: getString(formData, "companyName"),
-      selfIntroduction: getString(formData, "selfIntroduction"),
-      motivation: getString(formData, "motivation"),
-      notes: getString(formData, "notes") || null,
-    },
-  });
+  try {
+    await prisma.targetResume.update({
+      where: { id: normalizedId },
+      data: {
+        companyName: getString(formData, "companyName"),
+        selfIntroduction: getString(formData, "selfIntroduction"),
+        motivation: getString(formData, "motivation"),
+        notes: getString(formData, "notes") || null,
+      },
+    });
+  } catch (error) {
+    console.error("[updateTargetResume]", error);
+    throw error;
+  }
 
   redirect("/admin/resumes?saved=updated");
 }
@@ -101,9 +111,12 @@ export async function deleteTargetResume(id: string) {
     throw new Error("Invalid ID.");
   }
 
-  await prisma.targetResume.delete({
-    where: { id: normalizedId },
-  });
+  try {
+    await prisma.targetResume.delete({ where: { id: normalizedId } });
+  } catch (error) {
+    console.error("[deleteTargetResume]", error);
+    throw error;
+  }
 
   redirect("/admin/resumes");
 }
