@@ -220,18 +220,18 @@ docker compose up --build
 영속 데이터(SQLite DB, `.env`)는 runner 워크스페이스 밖의 고정 경로에 보관합니다.
 
 ```bash
-sudo mkdir -p /opt/resume-router/data
-sudo chown -R "$USER":"$USER" /opt/resume-router
+sudo mkdir -p ~/resume-router/data
+sudo chown -R "$USER":"$USER" ~/resume-router
 ```
 
-`/opt/resume-router/.env`를 생성합니다.
+`~/resume-router/.env`를 생성합니다.
 
 ```env
 DATABASE_URL="file:/app/data/dev.db"
 BASE_URL="https://resume.example.com"
 ADMIN_USERNAME="admin"
 ADMIN_PASSWORD="change-this-to-a-long-random-password"
-RESUME_ROUTER_DATA_DIR="/opt/resume-router/data"
+RESUME_ROUTER_DATA_DIR="~/resume-router/data"
 ```
 
 `DATABASE_URL`은 컨테이너 내부 경로로 고정합니다. 호스트의 실제 SQLite 파일 위치는 `RESUME_ROUTER_DATA_DIR`로 지정합니다.
@@ -241,7 +241,7 @@ RESUME_ROUTER_DATA_DIR="/opt/resume-router/data"
 이전에 다른 경로에서 운영하던 데이터가 있다면 이동합니다.
 
 ```bash
-mv /기존/경로/data/dev.db /opt/resume-router/data/dev.db
+mv /기존/경로/data/dev.db ~/resume-router/data/dev.db
 ```
 
 ### 수동 배포 및 운영 명령
@@ -249,13 +249,13 @@ mv /기존/경로/data/dev.db /opt/resume-router/data/dev.db
 runner 없이 수동으로 배포하려면 프로젝트 디렉터리에서 실행합니다.
 
 ```bash
-docker compose --env-file /opt/resume-router/.env up -d --build
+docker compose --env-file ~/resume-router/.env up -d --build
 ```
 
 샘플 데이터를 넣어 확인하려면 다음 명령을 실행합니다. 실제 운영 데이터가 있는 경우에는 실행하지 않습니다.
 
 ```bash
-docker compose --env-file /opt/resume-router/.env exec web npm run db:seed
+docker compose --env-file ~/resume-router/.env exec web npm run db:seed
 ```
 
 ## 디자인 메모
