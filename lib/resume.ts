@@ -75,11 +75,9 @@ export function buildBaseResumeUrl() {
 }
 
 export function buildResumeMarkdownUrl(id: string) {
-  const baseUrl = process.env.BASE_URL || "http://localhost:3000";
-  return `${baseUrl.replace(/\/$/, "")}/admin/resumes/${id}/markdown`;
+  return `/admin/resumes/${id}/markdown`;
 }
 
 export function buildBaseResumeMarkdownUrl() {
-  const baseUrl = process.env.BASE_URL || "http://localhost:3000";
-  return `${baseUrl.replace(/\/$/, "")}/admin/resume/markdown`;
+  return "/admin/resume/markdown";
 }
